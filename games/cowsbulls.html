@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cows and Bulls</title>
+
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    background: url("https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/4b5e1c15227903.5628e65346842.png") 
+                no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 650px;
+    margin: auto;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.7);
+  }
+
+  .rules-box {
+    background: rgba(20,20,20,0.8);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+
+  .attempt-box, .game-box {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(20,20,20,0.8);
+    border-radius: 8px;
+  }
+
+  input {
+    padding: 10px;
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    font-size: 18px;
+    background: #333;
+    color: white;
+  }
+
+  button {
+    margin-top: 15px;
+    padding: 12px;
+    background: #00FFD8;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    color: #000;
+    font-weight: bold;
+  }
+
+  button:hover {
+    background: #00E6C4;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(10,10,10,0.9);
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 7px;
+    font-size: 18px;
+    border-left: 4px solid #00FFD8;
+  }
+
+  .message {
+    margin-top: 15px;
+    padding: 12px;
+    background: #550000;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .win {
+    background: #005500 !important;
+    color: #00FF90;
+  }
+
+  .lose {
+    background: #550000 !important;
+    color: #FF8080;
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Cows and Bulls 🐄🐂</h2>
+    <div class="rules-box">
+      <h3>📘 How to Play</h3>
+      <p>🔹 The computer generates a secret <b>4-digit number</b> with all unique digits.</p>
+      <p>🔹 You must guess the number within your chosen attempts.</p>
+
+      <h3>📌 Rules</h3>
+      <p>🐂 <b>Bull</b>: Correct digit in the correct position.</p>
+      <p>🐄 <b>Cow</b>: Correct digit but in the wrong position.</p>
+      <p>⭐ You win when you get <b>4 Bulls</b>!</p>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="attempt-box" id="attemptBox">
+      <h3>Enter number of attempts:</h3>
+      <input type="number" id="attemptInput" min="1" placeholder="Example: 7">
+      <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <div class="game-box" id="gameBox" style="display: none;">
+      <h3>Guess the 4-digit number:</h3>
+      <input type="number" id="guessInput" placeholder="Enter 4-digit number">
+      <button onclick="checkGuess()">Submit Guess</button>
+
+      <div id="resultList"></div>
+      <div class="message" id="message"></div>
+    </div>
+  </div>
+
+<script>
+  let secret = "";
+  let maxAttempts = 0;
+  let attemptsUsed = 0;
+
+  function generateSecret() {
+    let digits = [];
+    while (digits.length < 4) {
+      let d = Math.floor(Math.random() * 10);
+      if (!digits.includes(d)) digits.push(d);
+    }
+    return digits.join("");
+  }
+
+  function startGame() {
+    maxAttempts = Number(document.getElementById("attemptInput").value);
+
+    if (maxAttempts < 1) {
+      alert("Enter a valid number!");
+      return;
+    }
+
+    secret = generateSecret();
+    console.log("Secret Number:", secret);
+
+    document.getElementById("attemptBox").style.display = "none";
+    document.getElementById("gameBox").style.display = "block";
+  }
+
+  function checkGuess() {
+    let guess = document.getElementById("guessInput").value;
+
+    if (guess.length !== 4) {
+      alert("Enter a 4-digit number!");
+      return;
+    }
+
+    attemptsUsed++;
+
+    let bulls = 0;
+    let cows = 0;
+
+    for (let i = 0; i < 4; i++) {
+      if (guess[i] === secret[i]) {
+        bulls++;
+      } else if (secret.includes(guess[i])) {
+        cows++;
+      }
+    }
+
+    let row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <div>Guess: ${guess}</div>
+      <div>Bulls: ${bulls}, Cows: ${cows}</div>
+    `;
+    document.getElementById("resultList").appendChild(row);
+
+    if (bulls === 4) {
+      document.getElementById("message").className = "message win";
+      document.getElementById("message").innerHTML =
+        "🎉 Congratulations! You Won! <br>✔ Secret Number: " + secret;
+      document.getElementById("guessInput").disabled = true;
+      return;
+    }
+
+    if (attemptsUsed >= maxAttempts) {
+      document.getElementById("message").className = "message lose";
+      document.getElementById("message").innerHTML =
+        "❌ Game Over! <br>Better Luck Next Time 😔 <br>✔ The number was: " + secret;
+      document.getElementById("guessInput").disabled = true;
+      return;
+    }
+
+    document.getElementById("guessInput").value = "";
+  }
+</script>
+
+</body>
+</html>

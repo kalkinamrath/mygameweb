@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic Tac Toe</title>
+
+<style>
+    body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: url("https://th.bing.com/th/id/OIP.ej4PSTNZ-Uv_6pF6IxqS5AHaEK?w=308&h=180&c=7&r=0&o=7&pid=1.7&rm=3")
+                no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+    text-align: center;
+}
+    #startScreen, #gameContainer, #gameOverScreen {
+        display: none;
+        padding: 20px;
+    }
+
+    #startScreen {
+        display: block;
+    }
+
+    .box {
+        width: 100px;
+        height: 100px;
+        background: rgba(0,0,0,0.4);
+        border: 2px solid #fff;
+        font-size: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    #board {
+        width: 320px;
+        display: grid;
+        grid-template-columns: repeat(3, 100px);
+        margin: auto;
+        margin-top: 20px;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 18px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 15px;
+    }
+
+    .btn {
+        background: #00e6e6;
+        color: black;
+    }
+
+    .btn:hover {
+        background: #00b3b3;
+    }
+
+    #gameOverScreen {
+        background: rgba(0, 0, 0, 0.7);
+        padding: 30px;
+        border-radius: 10px;
+        display: none;
+        margin-top: 30px;
+    }
+
+</style>
+</head>
+<body>
+
+<!-- Start Screen -->
+<div id="startScreen">
+    <h1>Tic Tac Toe</h1>
+    <h2>Rules:</h2>
+    <p>✔ Player X and Player O take turns.<br>
+       ✔ The first player to get 3 in a row wins.<br>
+       ✔ If all boxes are filled and no one wins → Draw.</p>
+
+    <h2>How to Play:</h2>
+    <p>✔ Click any empty box to place X or O.<br>
+       ✔ The board will check the winner automatically.</p>
+
+    <button class="btn" onclick="startGame()">Start Game</button>
+</div>
+
+<!-- Game Screen -->
+<div id="gameContainer">
+    <h2 id="turnText">Player X's Turn</h2>
+    <div id="board"></div>
+</div>
+
+<!-- Game Over Screen -->
+<div id="gameOverScreen">
+    <h1 id="resultText"></h1>
+    <button class="btn" onclick="restartGame()">Restart Game</button>
+    <button class="btn" onclick="goHome()">Return to Home</button>
+</div>
+
+<script>
+    let board = ["", "", "", "", "", "", "", "", ""];
+    let currentPlayer = "X";
+    let gameActive = true;
+
+    const winningConditions = [
+        [0,1,2], [3,4,5], [6,7,8],  
+        [0,3,6], [1,4,7], [2,5,8],  
+        [0,4,8], [2,4,6]
+    ];
+
+    const boardElement = document.getElementById("board");
+    const turnText = document.getElementById("turnText");
+
+    function startGame() {
+        document.getElementById("startScreen").style.display = "none";
+        document.getElementById("gameContainer").style.display = "block";
+        createBoard();
+    }
+
+    function createBoard() {
+        boardElement.innerHTML = "";
+        for (let i = 0; i < 9; i++) {
+            let cell = document.createElement("div");
+            cell.classList.add("box");
+            cell.addEventListener("click", () => cellClicked(i));
+            boardElement.appendChild(cell);
+        }
+    }
+
+    function cellClicked(i) {
+        if (board[i] !== "" || !gameActive) return;
+
+        board[i] = currentPlayer;
+        updateBoardUI();
+
+        if (checkWinner()) {
+            endGame(`${currentPlayer} Wins!`);
+            return;
+        }
+
+        if (!board.includes("")) {
+            endGame("It's a Draw!");
+            return;
+        }
+
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+        turnText.innerText = `Player ${currentPlayer}'s Turn`;
+    }
+
+    function updateBoardUI() {
+        const cells = document.querySelectorAll(".box");
+        cells.forEach((c, i) => c.innerText = board[i]);
+    }
+
+    function checkWinner() {
+        return winningConditions.some(condition => {
+            return (
+                board[condition[0]] === currentPlayer &&
+                board[condition[1]] === currentPlayer &&
+                board[condition[2]] === currentPlayer
+            );
+        });
+    }
+
+    function endGame(message) {
+        gameActive = false;
+        document.getElementById("gameOverScreen").style.display = "block";
+        document.getElementById("resultText").innerText = message;
+    }
+
+    function restartGame() {
+        board = ["", "", "", "", "", "", "", "", ""];
+        currentPlayer = "X";
+        gameActive = true;
+        document.getElementById("gameOverScreen").style.display = "none";
+        updateBoardUI();
+        turnText.innerText = "Player X's Turn";
+    }
+
+    function goHome() {
+        location.href = "../index.html";
+    }
+
+</script>
+
+</body>
+</html>

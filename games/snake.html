@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snake Game</title>
+
+    <style>
+        body {
+            background: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 20px;
+        }
+
+        canvas {
+            background: #000;
+            border: 3px solid #00ff7f;
+            box-shadow: 0 0 20px #00ff7f;
+            display: none; 
+        }
+
+        .rules-box, .game-over-box {
+            width: 350px;
+            margin: auto;
+            padding: 20px;
+            background: #222;
+            border-radius: 10px;
+            box-shadow: 0 0 15px black;
+        }
+
+        .rules-box h2, .game-over-box h2 {
+            color: #00ff7f;
+            margin-bottom: 10px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px;
+            background: #00ff7f;
+            border: none;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            color: #000;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #00dd66;
+        }
+
+        #scoreDisplay {
+            margin-top: 10px;
+            font-size: 20px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- RULES SCREEN -->
+    <div class="rules-box" id="rulesScreen">
+        <h2>Snake Game</h2>
+
+        <h3>How to Play</h3>
+        <p>🟢 Use Arrow Keys to Move the Snake</p>
+        <p>🍎 Eat the red food to grow the snake</p>
+        <p>💀 Avoid hitting walls</p>
+        <p>💀 Avoid hitting your own tail</p>
+
+        <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <!-- Score -->
+    <div id="scoreDisplay">Score: 0</div>
+
+    <!-- GAME CANVAS -->
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <!-- GAME OVER SCREEN -->
+    <div class="game-over-box" id="gameOverScreen" style="display:none;">
+        <h2>Game Over!</h2>
+        <p id="finalScoreText"></p>
+
+        <button onclick="restartGame()">Play Again</button>
+        <button onclick="goHome()">Return to Home</button>
+    </div>
+
+    <script>
+        let canvas = document.getElementById("gameCanvas");
+        let ctx = canvas.getContext("2d");
+
+        let box = 20;
+        let snake;
+        let direction;
+        let food;
+        let score = 0;
+        let game;
+
+        function startGame() {
+            document.getElementById("rulesScreen").style.display = "none";
+            canvas.style.display = "block";
+            document.getElementById("scoreDisplay").style.display = "block";
+
+            snake = [{ x: 9 * box, y: 10 * box }];
+            direction = null;
+            score = 0;
+            document.getElementById("scoreDisplay").innerText = "Score: " + score;
+
+            food = {
+                x: Math.floor(Math.random() * 19 + 1) * box,
+                y: Math.floor(Math.random() * 19 + 1) * box
+            };
+
+            document.addEventListener("keydown", keyDirection);
+            game = setInterval(drawGame, 150);
+        }
+
+        function keyDirection(event) {
+            if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+            if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+            if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+            if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+        }
+
+        function drawGame() {
+            ctx.clearRect(0, 0, 400, 400);
+
+            // Draw food
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, box, box);
+
+            // Draw snake
+            ctx.fillStyle = "#00ff7f";
+            snake.forEach(part => ctx.fillRect(part.x, part.y, box, box));
+
+            let snakeX = snake[0].x;
+            let snakeY = snake[0].y;
+
+            if (direction === "UP") snakeY -= box;
+            if (direction === "DOWN") snakeY += box;
+            if (direction === "LEFT") snakeX -= box;
+            if (direction === "RIGHT") snakeX += box;
+
+            // If snake eats food
+            if (snakeX === food.x && snakeY === food.y) {
+                score++;
+                document.getElementById("scoreDisplay").innerText = "Score: " + score;
+
+                food = {
+                    x: Math.floor(Math.random() * 19 + 1) * box,
+                    y: Math.floor(Math.random() * 19 + 1) * box
+                };
+            } else {
+                snake.pop();
+            }
+
+            let newHead = { x: snakeX, y: snakeY };
+
+            // Game over conditions
+            if (
+                snakeX < 0 || snakeX >= 400 ||
+                snakeY < 0 || snakeY >= 400 ||
+                isCollision(newHead, snake)
+            ) {
+                gameOver();
+                return;
+            }
+
+            snake.unshift(newHead);
+        }
+
+        function isCollision(head, array) {
+            return array.some(part => part.x === head.x && part.y === head.y);
+        }
+
+        function gameOver() {
+            clearInterval(game);
+
+            canvas.style.display = "none";
+            document.getElementById("scoreDisplay").style.display = "none";
+
+            document.getElementById("finalScoreText").innerText =
+                "Your Score: " + score;
+
+            document.getElementById("gameOverScreen").style.display = "block";
+        }
+
+        function restartGame() {
+            document.getElementById("gameOverScreen").style.display = "none";
+            startGame();
+        }
+
+        function goHome() {
+            window.location.href = "../index.html";
+        }
+        // Touch Controls for Mobile
+let startX, startY, endX, endY;
+
+document.addEventListener("touchstart", function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+});
+
+document.addEventListener("touchmove", function(e) {
+    endX = e.touches[0].clientX;
+    endY = e.touches[0].clientY;
+});
+
+document.addEventListener("touchend", function() {
+    let diffX = endX - startX;
+    let diffY = endY - startY;
+
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 0 && direction !== "LEFT") direction = "RIGHT";
+        else if (diffX < 0 && direction !== "RIGHT") direction = "LEFT";
+    } else {
+        if (diffY > 0 && direction !== "UP") direction = "DOWN";
+        else if (diffY < 0 && direction !== "DOWN") direction = "UP";
+    }
+});
+    </script>
+
+</body>
+</html>
